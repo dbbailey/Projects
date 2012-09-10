@@ -8,12 +8,7 @@ using namespace std;
 long long powerMod(long long base, long long exp, long long mod)
 {
 	long long ret = 1;
-	long long cpy = exp;
-	int bits = 0;	
-
-	bits = log(cpy) / log(2) + 1;
-	int bitsConst = bits;
-
+	int bits = log(exp) / log(2) + 1;
 	while(bits > 0)
 	{
 
@@ -35,7 +30,6 @@ bool fermat(long long prime, int retryCount = 20)
 	int a = 0;
 	for(int i=0;i<retryCount;i++)
 	{
-		//a = (rand() % (prime - 1)) + 1;
 		a = rand() % prime;
 
 		if(a < 1)
@@ -53,42 +47,46 @@ bool fermat(long long prime, int retryCount = 20)
 	return true;
 }
 
-int inline largeFactorTwo(long long n)
+bool millerRabin(long long w, int retryCount = 20)
 {
-	while(n % 2 == 0) n = n >> 1;
-	return n;
-}
-
-bool millerRabin(long long prime, int retryCount = 20)
-{
-	int s = largeFactorTwo(prime - 1);
-	int d = prime / pow(2, s);
-	int a, x;
-	bool done = false;
-
-	while(retryCount-- > 0)
+	if((w & 1) == 0) return false;
+	
+	int cpy = w - 1, a = 0;
+	while(!(cpy & 1))
 	{
-		a = rand() % (prime/2 - 2) + 2;
-
-		x = powerMod(a, d, prime);
-		if(x == 1 || x == prime - 1)
-			continue;
-
-		for(int r=1;r<s;r++)
-		{
-			x = powerMod(x, 2, prime);
-			if(x == 1) return false;
-			if(x == prime - 1)
-			{			
-				done = true;
-				break;
-			}
-		}
-		if(!done)
-			return false;
+		cpy >>= 1;
+		a++;
 	}
 
-	return true;	
+	int m = (w - 1) / pow(2, a);
+
+	for(int iter=0;iter<retryCount;iter++)
+	{
+		int a = rand() % (w - 4) + 2;
+
+		int z = powerMod(a, m, w);
+		if(z == 1 || z == w - 1) 
+			continue;
+
+		bool cont = false;
+		for(int j=1;j<a;j++)
+		{
+			z = (z * z) % w;
+			if(z == w - 1)
+			{
+				cont = true;
+				break;
+			}
+
+			if(z == 1) return false;
+		}
+
+		if(cont) continue;
+
+		return false;
+	}
+
+	return true;
 }
 
 int main(int argc, char **argv)
