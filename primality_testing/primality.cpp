@@ -11,12 +11,7 @@ long long powerMod(long long base, long long exp, long long mod)
 	long long cpy = exp;
 	int bits = 0;	
 
-	while(cpy > 0)
-	{
-		bits++;
-		cpy = cpy >> 1;
-	}
-
+	bits = log(cpy) / log(2) + 1;
 	int bitsConst = bits;
 
 	while(bits > 0)
@@ -69,28 +64,27 @@ bool millerRabin(long long prime, int retryCount = 20)
 	int s = largeFactorTwo(prime - 1);
 	int d = prime / pow(2, s);
 	int a, x;
+	bool done = false;
 
 	while(retryCount-- > 0)
 	{
-		a = rand() % prime;
-
-		if(a < 1) 
-		{
-			retryCount++;
-			continue;
-		}	
+		a = rand() % (prime/2 - 2) + 2;
 
 		x = powerMod(a, d, prime);
+		if(x == 1 || x == prime - 1)
+			continue;
 
-		int exp = d;
-
-		while(exp != prime - 1 && x != 1 && x != prime - 1)
+		for(int r=1;r<s;r++)
 		{
-			x = x * x % prime;
-			exp = exp * 2;
+			x = powerMod(x, 2, prime);
+			if(x == 1) return false;
+			if(x == prime - 1)
+			{			
+				done = true;
+				break;
+			}
 		}
-	
-		if(x != prime - 1 && exp % 2 == 0)
+		if(!done)
 			return false;
 	}
 
